@@ -1,0 +1,37 @@
+
+
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    container_name: redpanda
+    ports:
+      - "9092:9092"
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --reserve-memory=0M
+      - --overprovisioned
+      - --node-id=0
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://localhost:9092
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: quarkus
+      POSTGRES_PASSWORD: quarkus
+      POSTGRES_DB: auxim_db
+    ports:
+      - "5432:5432"
+
+  restate:
+    image: ghcr.io/restatedev/restate:latest
+    ports:
+      - "8080:8080"  
+      - "9070:9070"  
+      - "9071:9071"  
+    environment:
+      - RESTATE_OBSERVABILITY__LOG_FORMAT=json
+    depends_on:
+      - redpanda
