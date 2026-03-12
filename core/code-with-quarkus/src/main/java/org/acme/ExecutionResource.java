@@ -56,7 +56,6 @@ public class ExecutionResource {
 
         restatePayload.put("input", req.input);
 
-        // This fires the HTTP call to your Rust app via Restate
         restateClient.triggerRustEngine(restatePayload);
 
         return Response.status(201).entity(instance).build();
@@ -66,5 +65,14 @@ public class ExecutionResource {
     @Path("/{id}")
     public ProcessInstance getExecution(@PathParam("id") UUID id) {
         return ProcessInstance.findById(id);
+    }
+
+    @GET
+    public Response listExecutions(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size) {
+
+        List<ProcessInstance> instances = ProcessInstance.findAll().page(page, size).list();
+        return Response.ok(instances).build();
     }
 }
