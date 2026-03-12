@@ -1,9 +1,9 @@
-
-
 services:
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:latest
     container_name: redpanda
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
     ports:
       - "9092:9092"
     command:
@@ -15,9 +15,12 @@ services:
       - --node-id=0
       - --kafka-addr=PLAINTEXT://0.0.0.0:9092
       - --advertise-kafka-addr=PLAINTEXT://localhost:9092
+
   postgres:
     image: postgres:15
     container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: quarkus
       POSTGRES_PASSWORD: quarkus
@@ -27,11 +30,22 @@ services:
 
   restate:
     image: ghcr.io/restatedev/restate:latest
+    container_name: restate
+    volumes:
+      - restate_data:/target
     ports:
       - "8080:8080"  
       - "9070:9070"  
       - "9071:9071"  
     environment:
       - RESTATE_OBSERVABILITY__LOG_FORMAT=json
+      # Linking Restate to Kafka for durability
+      - RESTATE_STORAGE__TYPE=kafka
+      - RESTATE_STORAGE__KAFKA__BROKERS=redpanda:9092
     depends_on:
       - redpanda
+
+volumes:
+  redpanda_data:
+  postgres_data:
+  restate_data:

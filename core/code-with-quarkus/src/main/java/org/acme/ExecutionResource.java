@@ -75,4 +75,24 @@ public class ExecutionResource {
         List<ProcessInstance> instances = ProcessInstance.findAll().page(page, size).list();
         return Response.ok(instances).build();
     }
+
+    @POST
+    @Path("/{id}/tasks/{taskId}/complete")
+    @Transactional
+    public Response completeTask(
+            @PathParam("id") UUID executionId,
+            @PathParam("taskId") String taskId,
+            JsonNode userInput) {
+
+        ProcessInstance instance = ProcessInstance.findById(executionId);
+        if (instance == null) {
+            return Response.status(404).entity("{\"error\": \"Execution not found\"}").build();
+        }
+
+        restateClient.completeUserTask(executionId.toString(), userInput);
+
+        instance.status = "RUNNING";
+
+        return Response.ok("{\"message\": \"User input received, workflow resuming\"}").build();
+    }
 }

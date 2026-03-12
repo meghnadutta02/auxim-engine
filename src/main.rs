@@ -83,8 +83,10 @@ impl DslWorkflowRunner for DslWorkflowRunnerImpl {
     }
 
     async fn complete_user_task(&self, ctx: SharedWorkflowContext<'_>, task_result: Json<serde_json::Value>) -> HandlerResult<()> {
-        // task_result is already a Json<serde_json::Value>, which Restate knows how to serialize
+        println!("[ENGINE] Received external user input. Resuming workflow...");
+        
         ctx.resolve_promise("user-task-promise", task_result);
+            
         Ok(())
     }
 }
